@@ -1,10 +1,10 @@
 import mysql from "mysql2/promise";
 import { config } from "../config/env.js";
 import pool from "../config/db.js";
+import logger from "../config/logger.js";
 
 export async function initializeDatabase() {
-  // console.log("\n--- OMNIORDER ENGINE: DB INITIALIZER ---");
-  console.log(
+  logger.info(
     `DB CONFIG: Host=${config.db.host}, User=${config.db.user}, DB=${config.db.database}`
   );
   try {
@@ -67,7 +67,7 @@ export async function initializeDatabase() {
 
     for (const col of requiredCols) {
       if (!existingColNames.includes(col.name.toLowerCase())) {
-        console.log(
+        logger.info(
           `MIGRATION: Adding missing column [${col.name}] to audit_logs...`
         );
         await initConn.query(
@@ -77,9 +77,9 @@ export async function initializeDatabase() {
     }
 
     await initConn.end();
-    console.log("STATUS: DATABASE READY & MIGRATED");
+    logger.info("STATUS: DATABASE READY & MIGRATED");
   } catch (err) {
-    console.error("INIT FAILED:", err.message);
+    logger.error("INIT FAILED: " + err.message);
     setTimeout(initializeDatabase, 10000);
   }
 }
