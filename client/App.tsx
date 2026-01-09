@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
@@ -13,53 +14,44 @@ import Reports from "./pages/Reports";
 import AuditNetwork from "./pages/AuditNetwork";
 import UserManagement from "./pages/UserManagement";
 
-import SignIn from "./components/auth/SignIn";
-import SignUp from "./components/auth/SignUp";
+import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import { INITIAL_USERS } from "./constants";
 import { User } from "./types";
 
-// Use a simple mock for now or the first user
-const DEFAULT_USER = INITIAL_USERS[0];
+const queryClient = new QueryClient();
 
+// Helper to get user from storage (Optional if handled by hook, keeping for queryClient potentially if needed externally)
+// But strictly simpler:
 function App() {
-  const [currentUser, setCurrentUser] = useState<User>(DEFAULT_USER);
-
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <Toaster position="top-right" />
       <Routes>
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
-        <Route path="/" element={<Layout currentUser={currentUser} />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route
-            path="scan-order"
-            element={<OrderEntry currentUser={currentUser} />}
-          />
-          <Route
-            path="order-list"
-            element={<OrderList currentUser={currentUser} />}
-          />
-          <Route path="inventory" element={<Inventory />} />
-          <Route
-            path="purchases"
-            element={<Purchases currentUser={currentUser} />}
-          />
-          <Route
-            path="expenses"
-            element={<Expenses currentUser={currentUser} />}
-          />
-          <Route path="reports" element={<Reports />} />
-          <Route path="audit-network" element={<AuditNetwork />} />
-          <Route path="users" element={<UserManagement />} />
-          {/* Catch all redirect to dashboard */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="scan-order" element={<OrderEntry />} />
+            <Route path="order-list" element={<OrderList />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="purchases" element={<Purchases />} />
+            <Route path="expenses" element={<Expenses />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="audit-network" element={<AuditNetwork />} />
+            <Route path="users" element={<UserManagement />} />
+            {/* Catch all redirect to dashboard */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Route>
         </Route>
       </Routes>
-    </>
+    </QueryClientProvider>
   );
 }
 

@@ -22,12 +22,10 @@ import {
   useCreateExpense,
   useDeleteExpense,
 } from "../hooks/useQueries";
+import { useUser } from "../hooks/useAuth";
 
-interface ExpensesProps {
-  currentUser: any;
-}
-
-const Expenses: React.FC<ExpensesProps> = ({ currentUser }) => {
+const Expenses: React.FC = () => {
+  const { data: currentUser } = useUser();
   const { data: expenses = [] } = useExpenses();
   const createExpense = useCreateExpense();
   const deleteExpense = useDeleteExpense();

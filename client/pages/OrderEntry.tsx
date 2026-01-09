@@ -25,12 +25,10 @@ import {
 import { DISTRICTS, PAYMENT_METHODS, DELIVERY_CHARGES } from "../constants";
 
 import { useProducts, useCreateOrder } from "../hooks/useQueries";
+import { useUser } from "../hooks/useAuth";
 
-interface OrderEntryProps {
-  currentUser: any;
-}
-
-const OrderEntry: React.FC<OrderEntryProps> = ({ currentUser }) => {
+const OrderEntry: React.FC = () => {
+  const { data: currentUser } = useUser();
   const { data: products = [] } = useProducts();
   const createOrder = useCreateOrder();
 

@@ -14,11 +14,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { NAV_ITEMS } from "../config/navConfig";
 import SidebarItem from "./SidebarItem";
 
-interface LayoutProps {
-  currentUser: User;
-}
+import { useUser, useAuth } from "../hooks/useAuth";
 
-const Layout: React.FC<LayoutProps> = ({ currentUser }) => {
+const Layout: React.FC = () => {
+  const { data: currentUser } = useUser();
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -42,9 +41,10 @@ const Layout: React.FC<LayoutProps> = ({ currentUser }) => {
     return "Overview";
   };
 
+  const { logout } = useAuth();
+
   const handleLogout = () => {
-    // In a real app, clear tokens/state here
-    navigate("/signin");
+    logout();
   };
 
   return (

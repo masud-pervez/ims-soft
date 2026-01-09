@@ -25,12 +25,10 @@ import {
   useUpdateOrderStatus,
   useRecordPayment,
 } from "../hooks/useQueries";
+import { useUser } from "../hooks/useAuth";
 
-interface OrderListProps {
-  currentUser: any;
-}
-
-const OrderList: React.FC<OrderListProps> = ({ currentUser }) => {
+const OrderList: React.FC = () => {
+  const { data: currentUser } = useUser();
   const { data: orders = [], refetch } = useOrders();
   const updateStatus = useUpdateOrderStatus();
   const recordPayment = useRecordPayment();

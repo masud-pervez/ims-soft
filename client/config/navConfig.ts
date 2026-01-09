@@ -26,7 +26,7 @@ export const NAV_ITEMS: NavItem[] = [
     roles: [UserRole.ADMIN, UserRole.ORDER_RECEIVER, UserRole.DELIVERY_MANAGER],
   },
   {
-    to: "/orders",
+    to: "/scan-order",
     icon: PlusCircle,
     label: "New Order",
     roles: [UserRole.ADMIN, UserRole.ORDER_RECEIVER],

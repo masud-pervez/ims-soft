@@ -47,6 +47,25 @@ export async function initializeDatabase() {
       INDEX (purchaseDate)
     )`);
 
+    // Users Table
+    await initConn.query(`CREATE TABLE IF NOT EXISTS users (
+      id VARCHAR(36) PRIMARY KEY,
+      email VARCHAR(255) NOT NULL UNIQUE,
+      password VARCHAR(255) NOT NULL,
+      firstName VARCHAR(100),
+      lastName VARCHAR(100),
+      role VARCHAR(50) DEFAULT 'staff',
+      permissionsOverride JSON,
+      accessScope JSON,
+      isVerified BOOLEAN DEFAULT FALSE,
+      status VARCHAR(20) DEFAULT 'active',
+      lastLoginAt DATETIME,
+      failedLoginAttempts INT DEFAULT 0,
+      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX (email)
+    )`);
+
     // Audit Table Migration Logic
     await initConn.query(`CREATE TABLE IF NOT EXISTS audit_logs (
       id INT AUTO_INCREMENT PRIMARY KEY, 

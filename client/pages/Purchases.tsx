@@ -24,12 +24,10 @@ import {
   usePurchases,
   useCreatePurchase,
 } from "../hooks/useQueries";
+import { useUser } from "../hooks/useAuth";
 
-interface PurchasesProps {
-  currentUser: any;
-}
-
-const Purchases: React.FC<PurchasesProps> = ({ currentUser }) => {
+const Purchases: React.FC = () => {
+  const { data: currentUser } = useUser();
   const { data: products = [] } = useProducts();
   const { data: purchases = [], refetch } = usePurchases();
   const createPurchase = useCreatePurchase();

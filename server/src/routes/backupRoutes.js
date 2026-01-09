@@ -1,5 +1,9 @@
 import express from "express";
 import * as controller from "../controllers/backupController.js";
+import {
+  authenticateToken,
+  authorizeRoles,
+} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -16,10 +20,17 @@ const router = express.Router();
  *   get:
  *     summary: Create a system backup
  *     tags: [Backup]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Backup created successfully
  */
-router.get("/", controller.createBackup);
+router.get(
+  "/",
+  authenticateToken,
+  authorizeRoles(["admin"]),
+  controller.createBackup
+);
 
 export default router;
