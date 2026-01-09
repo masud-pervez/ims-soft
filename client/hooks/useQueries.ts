@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiService } from "../apiService";
+import { apiService } from "../services/apiService";
 import {
   Order,
   Product,

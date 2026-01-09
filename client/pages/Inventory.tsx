@@ -24,7 +24,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { Product, Category } from "../types";
-import { editProductImage } from "../geminiService";
+import { editProductImage } from "../services/geminiService";
 import {
   useProducts,
   useCategories,

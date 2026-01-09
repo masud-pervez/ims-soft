@@ -17,7 +17,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Order, OrderStatus, PaymentStatus } from "../types";
-import { apiService } from "../apiService";
+import { apiService } from "../services/apiService";
 import { PAYMENT_METHODS } from "../constants";
 
 import {

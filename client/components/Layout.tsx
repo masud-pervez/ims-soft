@@ -1,25 +1,18 @@
 import React from "react";
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
-  PlusCircle,
-  ShoppingCart,
   Package,
-  BarChart3,
-  Users,
   LogOut,
   ChevronRight,
   Database,
-  Layers,
-  Activity,
   WifiOff,
   RefreshCw,
-  CreditCard,
-  Truck,
 } from "lucide-react";
 import { User, UserRole } from "../types";
 import { useHealthCheck } from "../hooks/useQueries";
 import { useQueryClient } from "@tanstack/react-query";
+import { NAV_ITEMS } from "../config/navConfig";
+import SidebarItem from "./SidebarItem";
 
 interface LayoutProps {
   currentUser: User;
@@ -40,58 +33,18 @@ const Layout: React.FC<LayoutProps> = ({ currentUser }) => {
     await checkHealth();
   };
 
-  const SidebarItem = ({
-    to,
-    icon: Icon,
-    label,
-    roles,
-  }: {
-    to: string;
-    icon: any;
-    label: string;
-    roles: UserRole[];
-  }) => {
-    if (!roles.includes(currentUser.role)) return null;
-    return (
-      <NavLink
-        to={to}
-        className={({ isActive }) =>
-          `w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
-            isActive
-              ? "bg-indigo-600 text-white shadow-xl shadow-indigo-500/20"
-              : "text-slate-400 hover:bg-slate-800 hover:text-white"
-          }`
-        }
-      >
-        <Icon size={20} />
-        <span className="font-semibold text-sm">{label}</span>
-      </NavLink>
-    );
+  const getPageTitle = () => {
+    const currentItem = NAV_ITEMS.find((item) => item.to === location.pathname);
+    if (currentItem) return currentItem.label;
+
+    // Fallback logic for dynamic routes or internal pages
+    if (location.pathname === "/") return "Dashboard";
+    return "Overview";
   };
 
-  const getPageTitle = () => {
-    switch (location.pathname) {
-      case "/":
-        return "Dashboard";
-      case "/orders":
-        return "New Order";
-      case "/order-list":
-        return "All Orders";
-      case "/purchases":
-        return "Stock Purchases";
-      case "/expenses":
-        return "Expenditure";
-      case "/inventory":
-        return "Inventory & Cat";
-      case "/reports":
-        return "BI Reporting";
-      case "/audit-network":
-        return "Audit Network";
-      case "/users":
-        return "Team Management";
-      default:
-        return "Overview";
-    }
+  const handleLogout = () => {
+    // In a real app, clear tokens/state here
+    navigate("/signin");
   };
 
   return (
@@ -111,68 +64,16 @@ const Layout: React.FC<LayoutProps> = ({ currentUser }) => {
           </div>
         </div>
         <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto mt-4">
-          <SidebarItem
-            to="/"
-            icon={LayoutDashboard}
-            label="Dashboard"
-            roles={[
-              UserRole.ADMIN,
-              UserRole.ORDER_RECEIVER,
-              UserRole.DELIVERY_MANAGER,
-            ]}
-          />
-          <SidebarItem
-            to="/orders"
-            icon={PlusCircle}
-            label="New Order"
-            roles={[UserRole.ADMIN, UserRole.ORDER_RECEIVER]}
-          />
-          <SidebarItem
-            to="/order-list"
-            icon={ShoppingCart}
-            label="All Orders"
-            roles={[
-              UserRole.ADMIN,
-              UserRole.ORDER_RECEIVER,
-              UserRole.DELIVERY_MANAGER,
-            ]}
-          />
-          <SidebarItem
-            to="/purchases"
-            icon={Truck}
-            label="Stock Purchases"
-            roles={[UserRole.ADMIN]}
-          />
-          <SidebarItem
-            to="/expenses"
-            icon={CreditCard}
-            label="Expenditure"
-            roles={[UserRole.ADMIN, UserRole.DELIVERY_MANAGER]}
-          />
-          <SidebarItem
-            to="/inventory"
-            icon={Layers}
-            label="Inventory & Cat"
-            roles={[UserRole.ADMIN]}
-          />
-          <SidebarItem
-            to="/reports"
-            icon={BarChart3}
-            label="BI Reporting"
-            roles={[UserRole.ADMIN]}
-          />
-          <SidebarItem
-            to="/audit-network"
-            icon={Activity}
-            label="Audit Network"
-            roles={[UserRole.ADMIN]}
-          />
-          <SidebarItem
-            to="/users"
-            icon={Users}
-            label="Team Management"
-            roles={[UserRole.ADMIN]}
-          />
+          {NAV_ITEMS.map((item) => (
+            <SidebarItem
+              key={item.to}
+              to={item.to}
+              icon={item.icon}
+              label={item.label}
+              roles={item.roles}
+              currentUserRole={currentUser.role}
+            />
+          ))}
         </nav>
         <div className="p-4 bg-slate-900 m-6 rounded-2xl border border-slate-800 shadow-inner">
           <div className="flex items-center space-x-3 mb-4">
@@ -188,7 +89,10 @@ const Layout: React.FC<LayoutProps> = ({ currentUser }) => {
               </p>
             </div>
           </div>
-          <button className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-slate-800 text-xs text-rose-400 font-bold hover:bg-rose-500/10 transition-colors">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-slate-800 text-xs text-rose-400 font-bold hover:bg-rose-500/10 transition-colors"
+          >
             <LogOut size={14} />
             <span>Sign Out</span>
           </button>

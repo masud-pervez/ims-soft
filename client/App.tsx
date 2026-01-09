@@ -3,15 +3,18 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 
 import Layout from "./components/Layout";
-import Dashboard from "./components/Dashboard";
-import OrderEntry from "./components/OrderEntry";
-import OrderList from "./components/OrderList";
-import Inventory from "./components/Inventory";
-import Expenses from "./components/Expenses";
-import Purchases from "./components/Purchases";
-import Reports from "./components/Reports";
-import AuditNetwork from "./components/AuditNetwork";
-import UserManagement from "./components/UserManagement";
+import Dashboard from "./pages/Dashboard";
+import OrderEntry from "./pages/OrderEntry";
+import OrderList from "./pages/OrderList";
+import Inventory from "./pages/Inventory";
+import Expenses from "./pages/Expenses";
+import Purchases from "./pages/Purchases";
+import Reports from "./pages/Reports";
+import AuditNetwork from "./pages/AuditNetwork";
+import UserManagement from "./pages/UserManagement";
+
+import SignIn from "./components/auth/SignIn";
+import SignUp from "./components/auth/SignUp";
 
 import { INITIAL_USERS } from "./constants";
 import { User } from "./types";
@@ -26,7 +29,10 @@ function App() {
     <>
       <Toaster position="top-right" />
       <Routes>
-        <Route path="/" element={<Layout />}>
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+
+        <Route path="/" element={<Layout currentUser={currentUser} />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route
