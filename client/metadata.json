@@ -1,0 +1,7 @@
+{
+  "name": "OmniOrder Pro - Enterprise OMS",
+  "description": "A comprehensive Order Management System featuring stock control, profit analysis, multi-role access, and AI-powered product image editing.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
