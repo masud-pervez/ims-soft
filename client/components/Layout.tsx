@@ -17,10 +17,22 @@ import SidebarItem from "./SidebarItem";
 import { useUser, useAuth } from "../hooks/useAuth";
 
 const Layout: React.FC = () => {
-  const { data: currentUser } = useUser();
+  const { data: currentUser, isLoading: isLoadingUser } = useUser();
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Handle loading or missing user data
+  if (isLoadingUser || !currentUser) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-900">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white font-bold">Loading...</p>
+        </div>
+      </div>
+    );
+  }
   const {
     data: isDbConnected,
     refetch: checkHealth,
@@ -78,11 +90,13 @@ const Layout: React.FC = () => {
         <div className="p-4 bg-slate-900 m-6 rounded-2xl border border-slate-800 shadow-inner">
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center text-sm font-black text-white uppercase border border-slate-600">
-              {currentUser.name.charAt(0)}
+              {(currentUser.firstName || currentUser.email).charAt(0)}
             </div>
             <div className="overflow-hidden">
               <p className="text-sm font-black text-white truncate">
-                {currentUser.name}
+                {`${currentUser.firstName || ""} ${
+                  currentUser.lastName || ""
+                }`.trim() || currentUser.email}
               </p>
               <p className="text-[10px] text-indigo-400 uppercase font-black tracking-tighter">
                 {currentUser.role}
