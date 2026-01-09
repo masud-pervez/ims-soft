@@ -3,7 +3,10 @@ import { config } from "../config/env.js";
 import pool from "../config/db.js";
 
 export async function initializeDatabase() {
-  console.log("\n--- OMNIORDER ENGINE: DB INITIALIZER ---");
+  // console.log("\n--- OMNIORDER ENGINE: DB INITIALIZER ---");
+  console.log(
+    `DB CONFIG: Host=${config.db.host}, User=${config.db.user}, DB=${config.db.database}`
+  );
   try {
     const initConn = await mysql.createConnection({
       host: config.db.host,

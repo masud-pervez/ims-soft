@@ -10,3 +10,5 @@ const startServer = async () => {
 };
 
 startServer();
+
+// Force restart for env update
