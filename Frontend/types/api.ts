@@ -38,7 +38,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "staff" | "SUPER_ADMIN" | "ADMIN";
+  role: "STAFF" | "SUPER_ADMIN" | "ADMIN";
 }
 
 export interface AuthResponse {
@@ -81,4 +81,145 @@ export interface ApiResponse<T> {
   meta?: {
     pagination?: Pagination;
   };
+}
+
+// Customer types
+export interface Customer {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CustomerPayload {
+  name: string;
+  phone?: string;
+  email?: string;
+}
+
+// Supplier types
+export interface Supplier {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SupplierPayload {
+  name: string;
+  phone?: string;
+  email?: string;
+}
+
+// Category payload type (Category interface already exists)
+export interface CategoryPayload {
+  name: string;
+  description?: string;
+}
+
+// Order types
+export type OrderType = "SALE" | "PURCHASE" | "SALE_RETURN" | "PURCHASE_RETURN";
+
+export interface OrderItem {
+  id: string;
+  orderId: string;
+  productId: string;
+  quantity: number;
+  price: number;
+  total: number;
+}
+
+export interface Order {
+  id: string;
+  type: OrderType;
+  date: string;
+  customerId?: string;
+  supplierId?: string;
+  totalAmount: number;
+  items?: OrderItem[];
+  createdAt: string;
+}
+
+export interface OrderPayload {
+  type: OrderType;
+  date?: string;
+  customerId?: string;
+  supplierId?: string;
+  totalAmount: number;
+  items: {
+    productId: string;
+    quantity: number;
+    price: number;
+  }[];
+}
+
+// Finance types
+export interface Income {
+  id: string;
+  source: string;
+  amount: number;
+  date: string;
+  createdAt: string;
+}
+
+export interface IncomePayload {
+  source: string;
+  amount: number;
+  date?: string;
+}
+
+export interface Expense {
+  id: string;
+  category: string;
+  amount: number;
+  date: string;
+  createdAt: string;
+}
+
+export interface ExpensePayload {
+  category: string;
+  amount: number;
+  date?: string;
+}
+
+// Report types
+export interface ProfitLossReport {
+  startDate: string;
+  endDate: string;
+  totalIncome: number;
+  totalExpense: number;
+  profitOrLoss: number;
+  status: "Profit" | "Loss";
+}
+
+export interface DailyLedgerReport {
+  date: string;
+  incomes: Income[];
+  expenses: Expense[];
+  summary: {
+    totalIncome: number;
+    totalExpense: number;
+    net: number;
+  };
+}
+
+// Audit types
+export interface AuditLog {
+  id: string;
+  event: string;
+  userId?: string;
+  timestamp: string;
+}
+
+// User permission and status update types
+export interface UserPermissionsPayload {
+  permissions: Record<string, boolean>;
+}
+
+export interface UserStatusPayload {
+  status: "active" | "inactive";
 }
