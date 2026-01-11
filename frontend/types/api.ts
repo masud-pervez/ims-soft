@@ -36,9 +36,11 @@ export interface ProductPayload {
 
 export interface User {
   id: string;
-  name: string;
+  username: string;
   email: string;
   role: "STAFF" | "SUPER_ADMIN" | "ADMIN";
+  permissions: Record<string, boolean>;
+  created_at?: string;
 }
 
 export interface AuthResponse {
@@ -75,12 +77,17 @@ export interface Pagination {
 }
 
 export interface ApiResponse<T> {
-  success: boolean;
+  success?: boolean;
+  status?: boolean;
   message: string;
-  data: T;
+  data?: T;
+  Data?: T;
+  status_code?: number;
   meta?: {
     pagination?: Pagination;
   };
+  Error?: unknown;
+  error_message?: string;
 }
 
 // Customer types

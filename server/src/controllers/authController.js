@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/userModel.js";
 import { config } from "../config/env.js";
 import { sendResponse, sendError } from "../utils/responseHandler.js";
+import { UserRoles } from "../enums/userRoles.js";
 
 export const register = async (req, res) => {
   try {
@@ -22,7 +23,7 @@ export const register = async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      role: role || "staff",
+      role: role || UserRoles.STAFF,
       permissions: {},
     });
 

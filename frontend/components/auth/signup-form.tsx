@@ -69,7 +69,7 @@ export function SignupForm() {
     },
   });
 
-  const { setUser, setTokens } = useUserActions();
+  const { setUser, setToken } = useUserActions();
   const { mutate: signup, isPending: isLoading } =
     usePostData<SignupResponse>();
 
@@ -88,7 +88,7 @@ export function SignupForm() {
         onSuccess: (res) => {
           const { token, user } = res.Data;
           setUser(user);
-          setTokens(token, null);
+          setToken(token);
           setCookie("token", token);
 
           toast.success("Account created successfully!");

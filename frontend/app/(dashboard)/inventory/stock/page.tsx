@@ -26,7 +26,10 @@ export default function StockPage() {
     data: products,
     isLoading,
     isError,
-  } = useFetchData<Product[]>(["products"], "/products", { search });
+  } = useFetchData<Product[]>({
+    url: "/products",
+    params: { search },
+  });
 
   const handleAdjustStock = async (
     id: string,

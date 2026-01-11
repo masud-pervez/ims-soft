@@ -15,43 +15,24 @@ const useStore = create<UserStore>()(
     (set, get) => ({
       user: null,
       token: null,
-      refreshToken: null,
       isAuthenticated: false,
-      organization: null,
-      jobRole: null,
-      employeeId: null,
-      practitionerId: null,
       _hasHydrated: false,
 
       actions: {
-        setOrganization: (organization) => set({ organization }),
-        clearOrganization: () => set({ organization: null }),
-        setJobRole: (jobRole) => set({ jobRole }),
-        clearJobRole: () => set({ jobRole: null }),
-        setEmployeeId: (employeeId) => set({ employeeId }),
-        clearEmployeeId: () => set({ employeeId: null }),
-        setPractitionerId: (practitionerId) => set({ practitionerId }),
-        clearPractitionerId: () => set({ practitionerId: null }),
         setUser: (user) =>
           set({
             user,
             isAuthenticated: true,
           }),
-        setTokens: (token, refreshToken) =>
+        setToken: (token) =>
           set({
             token,
-            refreshToken,
           }),
         clearUser: () =>
           set({
             user: null,
             token: null,
-            refreshToken: null,
             isAuthenticated: false,
-            organization: null,
-            jobRole: null,
-            employeeId: null,
-            practitionerId: null,
           }),
         updateUser: (updates) =>
           set((state) => ({
@@ -59,7 +40,23 @@ const useStore = create<UserStore>()(
           })),
         hasPermission: (permission: string) => {
           const { user } = get();
-          return user?.permissions?.includes(permission) ?? false;
+          // Assuming permissions might be an object or array based on backend,
+          // adjusting strictly to backend 'permissions: {}' (object) check if needed.
+          // Since backend uses object for permissions, we need to know the specific structure
+          // to implement strictly. For now, checking if key exists or similar if it's a map.
+          // However, previous code assumed string array.
+          // Backend `userModel.js` line 15 defines `permissions = {}`.
+          // Let's assume for now simplistic check or keep it flexible.
+          // If permissions is an object like { "READ_USER": true }, we check key.
+          if (!user?.permissions) return false;
+          // Adaptation for object based permissions if applicable, or array.
+          // Safe check:
+          if (Array.isArray(user.permissions)) {
+            return user.permissions.includes(permission);
+          } else if (typeof user.permissions === "object") {
+            return !!(user.permissions as Record<string, unknown>)[permission];
+          }
+          return false;
         },
         hasRole: (role: string) => {
           const { user } = get();
@@ -78,12 +75,7 @@ const useStore = create<UserStore>()(
       partialize: (state) => ({
         user: state.user,
         token: state.token,
-        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
-        organization: state.organization,
-        jobRole: state.jobRole,
-        employeeId: state.employeeId,
-        practitionerId: state.practitionerId,
       }),
       skipHydration: true,
       onRehydrateStorage: () => (state) => {
@@ -98,12 +90,7 @@ export const useUserStore = () => {
     useShallow((state) => ({
       user: state.user,
       token: state.token,
-      refreshToken: state.refreshToken,
       isAuthenticated: state.isAuthenticated,
-      organization: state.organization,
-      jobRole: state.jobRole,
-      employeeId: state.employeeId,
-      practitionerId: state.practitionerId,
       _hasHydrated: state._hasHydrated,
     }))
   );
@@ -118,12 +105,7 @@ export const useUserStore = () => {
     return {
       user: null,
       token: null,
-      refreshToken: null,
       isAuthenticated: false,
-      organization: null,
-      jobRole: null,
-      employeeId: null,
-      practitionerId: null,
       _hasHydrated: false,
     };
   }
@@ -133,10 +115,26 @@ export const useUserStore = () => {
 
 export const useUserActions = (): UserStoreActions =>
   useStore((state) => state.actions);
-export const useOrganizationActions = (): UserStoreActions =>
-  useStore((state) => state.actions);
 
-export const getAuthToken = (): string | null => useStore.getState().token;
+export const getAuthToken = (): string | null => {
+  const token = useStore.getState().token;
+  if (token) return token;
+
+  // Fallback: Try reading directly from localStorage if store hasn't hydrated yet
+  if (typeof window !== "undefined") {
+    try {
+      const storageStr = localStorage.getItem("user-storage");
+      if (storageStr) {
+        const storage = JSON.parse(storageStr);
+        return storage.state?.token || null;
+      }
+    } catch (e) {
+      console.error("Error reading token from localStorage:", e);
+    }
+  }
+
+  return null;
+};
 
 export const clearAuthToken = (): void => {
   const { clearUser } = useStore.getState().actions;

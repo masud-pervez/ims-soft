@@ -52,7 +52,7 @@ export const useFetchData = <TFull = unknown>({
     ...(queryOptions as unknown as FetchQueryOptions<TFull>),
   });
 
-  const data = apiResponse?.data;
+  const data = apiResponse?.Data || apiResponse?.data;
   const pagination = apiResponse?.meta?.pagination;
 
   return {

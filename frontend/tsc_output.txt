@@ -1,0 +1,2 @@
+app/(dashboard)/inventory/page.tsx(31,45): error TS2554: Expected 1 arguments, but got 3.
+app/(dashboard)/inventory/stock/page.tsx(29,45): error TS2554: Expected 1 arguments, but got 3.

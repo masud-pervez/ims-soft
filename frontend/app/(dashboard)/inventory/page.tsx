@@ -28,7 +28,10 @@ export default function InventoryPage() {
     data: products,
     isLoading,
     isError,
-  } = useFetchData<Product[]>(["products"], "/products", { search });
+  } = useFetchData<Product[]>({
+    url: "/products",
+    params: { search },
+  });
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
@@ -119,7 +122,7 @@ export default function InventoryPage() {
                   <TableCell>{product.sku}</TableCell>
                   <TableCell>{product.categoryId}</TableCell>{" "}
                   {/* Mapping ID for now, later expand to Name */}
-                  <TableCell>${product.price.toFixed(2)}</TableCell>
+                  <TableCell>${(product.price || 0).toFixed(2)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span
