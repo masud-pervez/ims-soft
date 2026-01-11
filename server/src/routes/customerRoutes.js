@@ -1,10 +1,10 @@
 import express from "express";
 import {
-  getAllUsers,
-  createUser,
-  updateUser,
-  deleteUser,
-} from "../controllers/userController.js";
+  getAllCustomers,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer,
+} from "../controllers/customerController.js";
 import {
   authenticateToken,
   authorizeRoles,
@@ -14,26 +14,25 @@ import { UserRoles } from "../enums/userRoles.js";
 const router = express.Router();
 
 router.use(authenticateToken);
-router.use(authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN));
 
 /**
  * @swagger
- * /users:
+ * /customers:
  *   get:
- *     summary: Get all users
- *     tags: [Users]
+ *     summary: Get all customers
+ *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of users
+ *         description: List of customers
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  *   post:
- *     summary: Create a new user
- *     tags: [Users]
+ *     summary: Create a new customer
+ *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -41,29 +40,36 @@ router.use(authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN));
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             $ref: '#/components/schemas/Customer'
  *           example:
- *             username: "newuser"
- *             email: "newuser@example.com"
- *             password: "password123"
- *             role: "STAFF"
+ *             name: "Jane Doe"
+ *             phone: "1234567890"
+ *             email: "jane@example.com"
  *     responses:
  *       201:
- *         description: User created
+ *         description: Customer created
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  */
-router.get("/", getAllUsers);
-router.post("/", createUser);
+router.get(
+  "/",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN, UserRoles.STAFF),
+  getAllCustomers
+);
+router.post(
+  "/",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN, UserRoles.STAFF),
+  createCustomer
+);
 
 /**
  * @swagger
- * /users/{id}:
+ * /customers/{id}:
  *   put:
- *     summary: Update a user
- *     tags: [Users]
+ *     summary: Update a customer
+ *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -77,17 +83,17 @@ router.post("/", createUser);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             $ref: '#/components/schemas/Customer'
  *     responses:
  *       200:
- *         description: User updated
+ *         description: Customer updated
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  *   delete:
- *     summary: Delete a user
- *     tags: [Users]
+ *     summary: Delete a customer
+ *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -98,13 +104,21 @@ router.post("/", createUser);
  *           type: string
  *     responses:
  *       200:
- *         description: User deleted
+ *         description: Customer deleted
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiResponse'
  */
-router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
+router.put(
+  "/:id",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN),
+  updateCustomer
+);
+router.delete(
+  "/:id",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN),
+  deleteCustomer
+);
 
 export default router;

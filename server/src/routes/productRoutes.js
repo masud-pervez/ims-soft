@@ -1,50 +1,70 @@
 import express from "express";
-import * as controller from "../controllers/productController.js";
+import {
+  getAllProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from "../controllers/productController.js";
+import {
+  authenticateToken,
+  authorizeRoles,
+} from "../middleware/authMiddleware.js";
+import { UserRoles } from "../enums/userRoles.js";
 
 const router = express.Router();
 
-/**
- * @swagger
- * tags:
- *   name: Products
- *   description: Product management
- */
+router.use(authenticateToken);
 
 /**
  * @swagger
  * /products:
  *   get:
- *     summary: Retrieve a list of products
+ *     summary: Get all products
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: A list of products.
+ *         description: List of products
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Product'
- */
-router.get("/", controller.getProducts);
-
-/**
- * @swagger
- * /products:
+ *               $ref: '#/components/schemas/ApiResponse'
  *   post:
  *     summary: Create a new product
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/Product'
+ *           example:
+ *             name: "New Product"
+ *             categoryId: "cat_123"
+ *             purchasePrice: 100
+ *             salePrice: 150
+ *             stockQuantity: 10
  *     responses:
  *       201:
- *         description: Created
+ *         description: Product created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post("/", controller.createProduct);
+router.get(
+  "/",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN, UserRoles.STAFF),
+  getAllProducts
+);
+router.post(
+  "/",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN),
+  createProduct
+);
 
 /**
  * @swagger
@@ -52,6 +72,8 @@ router.post("/", controller.createProduct);
  *   put:
  *     summary: Update a product
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -66,8 +88,39 @@ router.post("/", controller.createProduct);
  *             $ref: '#/components/schemas/Product'
  *     responses:
  *       200:
- *         description: Updated
+ *         description: Product updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ *   delete:
+ *     summary: Delete a product
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Product deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
  */
-router.put("/:id", controller.updateProduct);
+router.put(
+  "/:id",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN),
+  updateProduct
+);
+router.delete(
+  "/:id",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN),
+  deleteProduct
+);
 
 export default router;

@@ -2,128 +2,75 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../models/userModel.js";
 import { config } from "../config/env.js";
+import { sendResponse, sendError } from "../utils/responseHandler.js";
 
-const generateToken = (user) => {
-  return jwt.sign(
-    {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      scope: user.accessScope,
-    },
-    config.jwtSecret || "default_dev_secret",
-    { expiresIn: "24h" }
-  );
+export const register = async (req, res) => {
+  try {
+    const { username, email, password, role } = req.body;
+
+    // Check if user exists
+    const existingUser = await User.findByEmail(email);
+    if (existingUser) {
+      return sendError(res, 400, "User already exists with this email.");
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    const newUser = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+      role: role || "staff",
+      permissions: {},
+    });
+
+    sendResponse(res, 201, "User registered successfully", {
+      userId: newUser.id,
+    });
+  } catch (error) {
+    console.error("Register Error:", error);
+    sendError(res, 500, "Internal server error", error);
+  }
 };
 
-export class AuthController {
-  /**
-   * Register a new user
-   */
-  static async register(req, res) {
-    try {
-      const { email, password, firstName, lastName } = req.body;
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-      // Check if exists
-      const existingUser = await User.findByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ message: "User already exists" });
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Create user
-      const newUser = await User.create({
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        role: "staff", // Default role
-        accessScope: { warehouses: [], stores: [] },
-      });
-
-      // Remove password from response
-      const { password: _, ...userWithoutPassword } = newUser;
-
-      res.status(201).json({
-        message: "User registered successfully",
-        user: userWithoutPassword,
-      });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    // Find user
+    const user = await User.findByEmail(email);
+    if (!user) {
+      return sendError(res, 401, "Invalid credentials");
     }
-  }
 
-  /**
-   * User Login
-   */
-  static async login(req, res) {
-    try {
-      const { email, password } = req.body;
-
-      // Find user
-      const user = await User.findByEmail(email);
-      if (!user) {
-        await User.updateLoginStats(null, false); // security placeholder (needs ID, skipping for now)
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      // Check password
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        await User.updateLoginStats(user.id, false);
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      // Success
-      await User.updateLoginStats(user.id, true);
-
-      const token = generateToken(user);
-      const { password: _, ...userWithoutPassword } = user;
-
-      res.json({
-        message: "Login successful",
-        token,
-        user: userWithoutPassword,
-      });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return sendError(res, 401, "Invalid credentials");
     }
-  }
 
-  /**
-   * Change User Role & Permissions
-   * Admin only (Middleware should verify this)
-   */
-  static async changeRole(req, res) {
-    try {
-      const { userId, role, permissionsOverride, accessScope } = req.body;
+    // Generate Token
+    const payload = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      permissions: user.permissions,
+    };
 
-      if (!userId) {
-        return res.status(400).json({ message: "User ID is required" });
+    const token = jwt.sign(
+      payload,
+      config.jwtSecret || "super_secret_jwt_key_ims_v2_2024",
+      {
+        expiresIn: "24h",
       }
+    );
 
-      const updates = {};
-      if (role) updates.role = role;
-      if (permissionsOverride)
-        updates.permissionsOverride = permissionsOverride;
-      if (accessScope) updates.accessScope = accessScope;
-
-      const updatedUser = await User.update(userId, updates);
-
-      if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      const { password: _, ...userWithoutPassword } = updatedUser;
-
-      res.json({
-        message: "User role/permissions updated",
-        user: userWithoutPassword,
-      });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
+    sendResponse(res, 200, "Login successful", { token, user: payload });
+  } catch (error) {
+    console.error("Login Error:", error);
+    sendError(res, 500, "Internal server error", error);
   }
-}
+};

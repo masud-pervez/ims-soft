@@ -3,15 +3,17 @@ import cors from "cors";
 import { config } from "./config/env.js";
 import requestLogger from "./middleware/requestLogger.js";
 
-import purchaseRoutes from "./routes/purchaseRoutes.js";
-import expenseRoutes from "./routes/expenseRoutes.js";
-import categoryRoutes from "./routes/categoryRoutes.js";
-import productRoutes from "./routes/productRoutes.js";
-import orderRoutes from "./routes/orderRoutes.js";
-import auditRoutes from "./routes/auditRoutes.js";
-import backupRoutes from "./routes/backupRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
+import customerRoutes from "./routes/customerRoutes.js";
+import supplierRoutes from "./routes/supplierRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import expenseRoutes from "./routes/expenseRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
+import auditRoutes from "./routes/auditRoutes.js";
+import backupRoutes from "./routes/backupRoutes.js";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.js";
@@ -29,13 +31,15 @@ app.get("/api/health", (req, res) => res.json({ status: "up" }));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
-app.use("/api/purchases", purchaseRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/expenses", expenseRoutes);
-app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/suppliers", supplierRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/expenses", expenseRoutes);
+app.use("/api/reports", reportRoutes);
 app.use("/api/audit-logs", auditRoutes);
 app.use("/api/backup", backupRoutes);
 

@@ -1,13 +1,16 @@
 import app from "./src/app.js";
 import { config } from "./src/config/env.js";
 import { initializeDatabase } from "./src/utils/dbInit.js";
-import logger from "./src/config/logger.js";
+import logger from "./src/utils/logger.js";
 
 const startServer = async () => {
   try {
     await initializeDatabase();
     const server = app.listen(config.port, () => {
       logger.info(`Server running on http://localhost:${config.port}`);
+      logger.info(
+        `Swagger Docs available at http://localhost:${config.port}/api-docs`
+      );
     });
 
     // Graceful shutdown

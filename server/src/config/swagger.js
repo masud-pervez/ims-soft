@@ -18,7 +18,7 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:4000/api",
+        url: "http://localhost:5000/api",
         description: "Development Server",
       },
     ],
@@ -36,17 +36,25 @@ const options = {
         },
       },
       schemas: {
-        AuditLog: {
+        User: {
           type: "object",
           properties: {
-            id: { type: "integer" },
-            targetId: { type: "string" },
-            module: { type: "string" },
-            action: { type: "string" },
-            oldState: { type: "string" },
-            newState: { type: "string" },
-            changedBy: { type: "string" },
-            timestamp: { type: "string", format: "date-time" },
+            id: { type: "string" },
+            username: { type: "string" },
+            email: { type: "string" },
+            role: { type: "string", enum: ["superadmin", "admin", "staff"] },
+            permissions: { type: "object" },
+          },
+        },
+        Product: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            categoryId: { type: "string" },
+            purchasePrice: { type: "number" },
+            salePrice: { type: "number" },
+            stockQuantity: { type: "integer" },
           },
         },
         Category: {
@@ -56,96 +64,98 @@ const options = {
             name: { type: "string" },
           },
         },
-        Expense: {
-          type: "object",
-          properties: {
-            id: { type: "string" },
-            amount: { type: "number" },
-            type: { type: "string" },
-            description: { type: "string" },
-            date: { type: "string", format: "date" },
-            createdBy: { type: "string" },
-            createdAt: { type: "string", format: "date-time" },
-          },
-        },
         Order: {
           type: "object",
           properties: {
             id: { type: "string" },
-            productId: { type: "string" },
-            productName: { type: "string" },
-            quantity: { type: "integer" },
-            unitPrice: { type: "number" },
-            subtotal: { type: "number" },
-            refNumbers: { type: "object" },
-            customer: { type: "object" },
-            discount: { type: "object" },
-            delivery: { type: "object" },
-            payment: { type: "object" },
-            financials: { type: "object" },
-            meta: { type: "object" },
-            orderDate: { type: "string", format: "date" },
+            type: {
+              type: "string",
+              enum: ["SALE", "PURCHASE", "SALE_RETURN", "PURCHASE_RETURN"],
+            },
+            totalAmount: { type: "number" },
+            customerId: { type: "string" },
+            supplierId: { type: "string" },
+            items: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  productId: { type: "string" },
+                  quantity: { type: "integer" },
+                  price: { type: "number" },
+                },
+              },
+            },
           },
         },
-        Product: {
+        Customer: {
           type: "object",
           properties: {
             id: { type: "string" },
             name: { type: "string" },
-            categoryId: { type: "string" },
-            costPrice: { type: "number" },
-            sellingPrice: { type: "number" },
-            openingStock: { type: "integer" },
-            currentStock: { type: "integer" },
-            image: { type: "string" },
+            phone: { type: "string" },
+            email: { type: "string" },
           },
         },
-        Purchase: {
+        Supplier: {
           type: "object",
           properties: {
             id: { type: "string" },
-            productId: { type: "string" },
-            productName: { type: "string" },
-            quantity: { type: "integer" },
-            purchasePrice: { type: "number" },
-            totalCost: { type: "number" },
-            supplierName: { type: "string" },
-            purchaseDate: { type: "string", format: "date" },
-            createdBy: { type: "string" },
-            createdAt: { type: "string", format: "date-time" },
+            name: { type: "string" },
+            phone: { type: "string" },
+            email: { type: "string" },
           },
         },
-        User: {
+        Income: {
           type: "object",
           properties: {
-            id: { type: "string", description: "UUID" },
-            email: { type: "string", format: "email" },
-            firstName: { type: "string" },
-            lastName: { type: "string" },
-            role: {
-              type: "string",
-              enum: ["admin", "manager", "staff"],
-              default: "staff",
+            id: { type: "string" },
+            source: { type: "string" },
+            amount: { type: "number" },
+            date: { type: "string", format: "date-time" },
+          },
+        },
+        Expense: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            category: { type: "string" },
+            amount: { type: "number" },
+            date: { type: "string", format: "date-time" },
+          },
+        },
+        AuditLog: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            event: { type: "string" },
+            userId: { type: "string" },
+            timestamp: { type: "string", format: "date-time" },
+          },
+        },
+        ApiResponse: {
+          type: "object",
+          properties: {
+            status: { type: "boolean", example: true },
+            message: { type: "string", example: "Operation successful" },
+            status_code: { type: "integer", example: 200 },
+            Data: {
+              nullable: true,
+              oneOf: [{ type: "object" }, { type: "array", items: {} }],
+              example: { id: "123", name: "Sample Item" },
             },
-            accessScope: {
-              type: "object",
-              description: "JSON defining warehouse/store access",
-              properties: {
-                warehouses: { type: "array", items: { type: "string" } },
-                stores: { type: "array", items: { type: "string" } },
-              },
+            Error: { type: "object", nullable: true, example: null },
+            error_message: { type: "string", nullable: true, example: null },
+          },
+          example: {
+            status: true,
+            message: "Operation successful",
+            status_code: 200,
+            Data: {
+              key: "value",
             },
-            permissionsOverride: { type: "array", items: { type: "string" } },
-            isVerified: { type: "boolean" },
-            status: {
-              type: "string",
-              enum: ["active", "inactive", "suspended"],
-              default: "active",
-            },
-            lastLoginAt: { type: "string", format: "date-time" },
-            failedLoginAttempts: { type: "integer" },
-            createdAt: { type: "string", format: "date-time" },
-            updatedAt: { type: "string", format: "date-time" },
+            Error: null,
+            error_message: null,
           },
         },
       },

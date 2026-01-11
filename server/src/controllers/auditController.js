@@ -1,12 +1,11 @@
-import pool from "../config/db.js";
+import { AuditLog } from "../models/auditLogModel.js";
+import { sendResponse, sendError } from "../utils/responseHandler.js";
 
-export const getAuditLogs = async (req, res) => {
+export const getAllAuditLogs = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100"
-    );
-    res.json(rows);
+    const logs = await AuditLog.findAll();
+    sendResponse(res, 200, "Audit logs retrieved successfully", logs);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendError(res, 500, error.message, error);
   }
 };

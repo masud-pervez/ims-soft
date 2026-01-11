@@ -1,9 +1,5 @@
 import express from "express";
-import { AuthController } from "../controllers/authController.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../middleware/authMiddleware.js";
+import { register, login } from "../controllers/authController.js";
 
 const router = express.Router();
 
@@ -19,19 +15,26 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [email, password]
+ *             required: [username, email, password]
  *             properties:
- *               email: { type: string }
- *               password: { type: string }
- *               firstName: { type: string }
- *               lastName: { type: string }
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [SUPER_ADMIN, ADMIN, STAFF]
  *     responses:
  *       201:
- *         description: User created
- *       400:
- *         description: User exists
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post("/register", AuthController.register);
+router.post("/register", register);
 
 /**
  * @swagger
@@ -47,44 +50,20 @@ router.post("/register", AuthController.register);
  *             type: object
  *             required: [email, password]
  *             properties:
- *               email: { type: string }
- *               password: { type: string }
+ *               email:
+ *                 type: string
+ *                 example: superadmin@gmail.com
+ *               password:
+ *                 type: string
+ *                 example: 12345678
  *     responses:
  *       200:
- *         description: Success
- *       401:
- *         description: Invalid credentials
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
  */
-router.post("/login", AuthController.login);
-
-/**
- * @swagger
- * /auth/role:
- *   put:
- *     summary: Update User Role (Admin)
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [userId]
- *             properties:
- *               userId: { type: string }
- *               role: { type: string, enum: [admin, manager, staff] }
- *               permissionsOverride: { type: array, items: { type: string } }
- *     responses:
- *       200:
- *         description: Updated
- */
-router.put(
-  "/role",
-  authenticateToken,
-  authorizeRoles(["admin"]),
-  AuthController.changeRole
-);
+router.post("/login", login);
 
 export default router;

@@ -1,60 +1,61 @@
-import pool from "../config/db.js";
-import { logAudit } from "../services/auditService.js";
+import { Income } from "../models/incomeModel.js";
+import { Expense } from "../models/expenseModel.js";
+import { sendResponse, sendError } from "../utils/responseHandler.js";
 
-export const getExpenses = async (req, res) => {
+// Income
+export const getAllIncome = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM expenses ORDER BY date DESC"
-    );
-    res.json(rows);
+    const income = await Income.findAll();
+    sendResponse(res, 200, "Income records retrieved successfully", income);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendError(res, 500, error.message, error);
+  }
+};
+
+export const createIncome = async (req, res) => {
+  try {
+    const result = await Income.create(req.body);
+    sendResponse(res, 201, "Income record created successfully", result);
+  } catch (error) {
+    sendError(res, 500, error.message, error);
+  }
+};
+
+export const deleteIncome = async (req, res) => {
+  try {
+    const success = await Income.delete(req.params.id);
+    if (!success) return sendError(res, 404, "Income record not found");
+    sendResponse(res, 200, "Income record deleted successfully");
+  } catch (error) {
+    sendError(res, 500, error.message, error);
+  }
+};
+
+// Expense
+export const getAllExpenses = async (req, res) => {
+  try {
+    const expenses = await Expense.findAll();
+    sendResponse(res, 200, "Expense records retrieved successfully", expenses);
+  } catch (error) {
+    sendError(res, 500, error.message, error);
   }
 };
 
 export const createExpense = async (req, res) => {
-  const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();
-    const { id, amount, type, description, date, createdBy } = req.body;
-    await conn.query(
-      "INSERT INTO expenses (id, amount, type, description, date, createdBy) VALUES (?,?,?,?,?,?)",
-      [id, amount, type, description, date, createdBy]
-    );
-    await logAudit(conn, id, "Expense", "CREATE", null, req.body, createdBy);
-    await conn.commit();
-    res.status(201).json({ success: true });
-  } catch (err) {
-    await conn.rollback();
-    res.status(500).json({ message: err.message });
-  } finally {
-    conn.release();
+    const result = await Expense.create(req.body);
+    sendResponse(res, 201, "Expense record created successfully", result);
+  } catch (error) {
+    sendError(res, 500, error.message, error);
   }
 };
 
 export const deleteExpense = async (req, res) => {
-  const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();
-    const [rows] = await conn.query("SELECT * FROM expenses WHERE id = ?", [
-      req.params.id,
-    ]);
-    await conn.query("DELETE FROM expenses WHERE id = ?", [req.params.id]);
-    await logAudit(
-      conn,
-      req.params.id,
-      "Expense",
-      "DELETE",
-      rows[0],
-      null,
-      "System/Admin"
-    );
-    await conn.commit();
-    res.json({ success: true });
-  } catch (err) {
-    await conn.rollback();
-    res.status(500).json({ message: err.message });
-  } finally {
-    conn.release();
+    const success = await Expense.delete(req.params.id);
+    if (!success) return sendError(res, 404, "Expense record not found");
+    sendResponse(res, 200, "Expense record deleted successfully");
+  } catch (error) {
+    sendError(res, 500, error.message, error);
   }
 };

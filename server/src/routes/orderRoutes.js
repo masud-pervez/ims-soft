@@ -1,102 +1,99 @@
 import express from "express";
-import * as controller from "../controllers/orderController.js";
+import {
+  getAllOrders,
+  getOrderById,
+  createOrder,
+} from "../controllers/orderController.js";
+import {
+  authenticateToken,
+  authorizeRoles,
+} from "../middleware/authMiddleware.js";
+import { UserRoles } from "../enums/userRoles.js";
 
 const router = express.Router();
 
-/**
- * @swagger
- * tags:
- *   name: Orders
- *   description: Order management
- */
+router.use(authenticateToken);
 
 /**
  * @swagger
  * /orders:
  *   get:
- *     summary: Retrieve all orders
+ *     summary: Get all orders
  *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of orders
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Order'
+ *               $ref: '#/components/schemas/ApiResponse'
  *   post:
  *     summary: Create a new order
  *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/Order'
+ *           example:
+ *             type: "SALE"
+ *             customerId: "cust_123"
+ *             supplierId: "supp_123"
+ *             totalAmount: 500
+ *             items:
+ *               - productId: "prod_001"
+ *                 quantity: 2
+ *                 price: 250
  *     responses:
  *       201:
  *         description: Order created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
  */
-router.get("/", controller.getOrders);
-router.post("/", controller.createOrder);
+router.get(
+  "/",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN, UserRoles.STAFF),
+  getAllOrders
+);
+router.post(
+  "/",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN, UserRoles.STAFF),
+  createOrder
+);
 
 /**
  * @swagger
- * /orders/{id}/status:
- *   patch:
- *     summary: Update order status
+ * /orders/{id}:
+ *   get:
+ *     summary: Get order by ID
  *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               status:
- *                 type: string
- *               changedBy:
- *                 type: string
  *     responses:
  *       200:
- *         description: Status updated
+ *         description: Order details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
  */
-router.patch("/:id/status", controller.updateOrderStatus);
-
-/**
- * @swagger
- * /orders/{id}/payment:
- *   patch:
- *     summary: Record a payment
- *     tags: [Orders]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               amount:
- *                 type: number
- *               method:
- *                 type: string
- *     responses:
- *       200:
- *         description: Payment recorded
- */
-router.patch("/:id/payment", controller.updateOrderPayment);
+router.get(
+  "/:id",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN, UserRoles.STAFF),
+  getOrderById
+);
 
 export default router;

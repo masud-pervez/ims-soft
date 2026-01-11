@@ -1,33 +1,42 @@
-import pool from "../config/db.js";
-import { logAudit } from "../services/auditService.js";
+import { Category } from "../models/categoryModel.js";
+import { sendResponse, sendError } from "../utils/responseHandler.js";
 
-export const getCategories = async (req, res) => {
+export const getAllCategories = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM categories ORDER BY name ASC"
-    );
-    res.json(rows);
+    const categories = await Category.findAll();
+    sendResponse(res, 200, "Categories retrieved successfully", categories);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendError(res, 500, error.message, error);
   }
 };
 
 export const createCategory = async (req, res) => {
-  const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();
-    const { id, name } = req.body;
-    await conn.query("INSERT INTO categories (id, name) VALUES (?,?)", [
-      id,
-      name,
-    ]);
-    await logAudit(conn, id, "Category", "CREATE", null, req.body, "Admin");
-    await conn.commit();
-    res.status(201).json({ success: true });
-  } catch (err) {
-    await conn.rollback();
-    res.status(500).json({ message: err.message });
-  } finally {
-    conn.release();
+    const { name } = req.body;
+    const result = await Category.create(name);
+    sendResponse(res, 201, "Category created successfully", result);
+  } catch (error) {
+    sendError(res, 500, error.message, error);
+  }
+};
+
+export const updateCategory = async (req, res) => {
+  try {
+    const { name } = req.body;
+    const result = await Category.update(req.params.id, name);
+    if (!result) return sendError(res, 404, "Category not found");
+    sendResponse(res, 200, "Category updated successfully", result);
+  } catch (error) {
+    sendError(res, 500, error.message, error);
+  }
+};
+
+export const deleteCategory = async (req, res) => {
+  try {
+    const success = await Category.delete(req.params.id);
+    if (!success) return sendError(res, 404, "Category not found");
+    sendResponse(res, 200, "Category deleted successfully");
+  } catch (error) {
+    sendError(res, 500, error.message, error);
   }
 };

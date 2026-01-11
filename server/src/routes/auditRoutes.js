@@ -1,31 +1,16 @@
 import express from "express";
-import * as controller from "../controllers/auditController.js";
+import { getAllAuditLogs } from "../controllers/auditController.js";
+import {
+  authenticateToken,
+  authorizeRoles,
+} from "../middleware/authMiddleware.js";
+import { UserRoles } from "../enums/userRoles.js";
 
 const router = express.Router();
 
-/**
- * @swagger
- * tags:
- *   name: AuditLogs
- *   description: Audit log history
- */
+router.use(authenticateToken);
+router.use(authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN));
 
-/**
- * @swagger
- * /audit-logs:
- *   get:
- *     summary: Retrieve audit logs
- *     tags: [AuditLogs]
- *     responses:
- *       200:
- *         description: A list of audit logs
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/AuditLog'
- */
-router.get("/", controller.getAuditLogs);
+router.get("/", getAllAuditLogs);
 
 export default router;

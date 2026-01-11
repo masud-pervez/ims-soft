@@ -1,104 +1,104 @@
 import mysql from "mysql2/promise";
+import fs from "fs";
+import path from "path";
 import { config } from "../config/env.js";
-import pool from "../config/db.js";
-import logger from "../config/logger.js";
+import logger from "./logger.js";
+import { getSeedData } from "./seedData.js";
 
 export async function initializeDatabase() {
-  logger.info(
-    `DB CONFIG: Host=${config.db.host}, User=${config.db.user}, DB=${config.db.database}`
-  );
+  let connection;
   try {
-    const initConn = await mysql.createConnection({
+    // 1. Connect without Database to Create it if needed
+    connection = await mysql.createConnection({
       host: config.db.host,
       user: config.db.user,
       password: config.db.password,
     });
 
-    await initConn.query(`CREATE DATABASE IF NOT EXISTS ${config.db.database}`);
-    await initConn.query(`USE ${config.db.database}`);
-
-    // Base Tables
-    await initConn.query(
-      `CREATE TABLE IF NOT EXISTS categories (id VARCHAR(50) PRIMARY KEY, name VARCHAR(255) NOT NULL)`
+    await connection.query(
+      `CREATE DATABASE IF NOT EXISTS \`${config.db.name}\``
     );
-    await initConn.query(
-      `CREATE TABLE IF NOT EXISTS products (id VARCHAR(50) PRIMARY KEY, name VARCHAR(255) NOT NULL, categoryId VARCHAR(50), costPrice DECIMAL(12, 2) DEFAULT 0.00, sellingPrice DECIMAL(12, 2) DEFAULT 0.00, openingStock INT DEFAULT 0, currentStock INT DEFAULT 0, image LONGTEXT, INDEX (categoryId))`
-    );
-    await initConn.query(
-      `CREATE TABLE IF NOT EXISTS orders (id VARCHAR(50) PRIMARY KEY, productId VARCHAR(50), productName VARCHAR(255), quantity INT DEFAULT 1, unitPrice DECIMAL(12, 2) DEFAULT 0.00, subtotal DECIMAL(12, 2) DEFAULT 0.00, refNumbers JSON, customer JSON, discount JSON, delivery JSON, payment JSON, financials JSON, meta JSON, orderDate DATE NOT NULL)`
-    );
-    await initConn.query(
-      `CREATE TABLE IF NOT EXISTS expenses (id VARCHAR(50) PRIMARY KEY, amount DECIMAL(15, 2) NOT NULL, type VARCHAR(100) NOT NULL, description TEXT, date DATE NOT NULL, createdBy VARCHAR(255) NOT NULL, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`
-    );
+    await connection.query(`USE \`${config.db.name}\``);
+    logger.info(`Database '${config.db.name}' checked/created.`);
 
-    // Resilient Purchase Table Creation
-    await initConn.query(`CREATE TABLE IF NOT EXISTS purchases (
-      id VARCHAR(50) PRIMARY KEY,
-      productId VARCHAR(50) NOT NULL,
-      productName VARCHAR(255) NOT NULL,
-      quantity INT NOT NULL,
-      purchasePrice DECIMAL(12, 2) NOT NULL,
-      totalCost DECIMAL(15, 2) NOT NULL,
-      supplierName VARCHAR(255),
-      purchaseDate DATE NOT NULL,
-      createdBy VARCHAR(255) NOT NULL,
-      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      INDEX (productId),
-      INDEX (purchaseDate)
-    )`);
+    // 2. Read and Run Schema
+    const schemaPath = path.join(process.cwd(), "schema.sql");
+    const schemaSql = fs.readFileSync(schemaPath, "utf-8");
 
-    // Users Table
-    await initConn.query(`CREATE TABLE IF NOT EXISTS users (
-      id VARCHAR(36) PRIMARY KEY,
-      email VARCHAR(255) NOT NULL UNIQUE,
-      password VARCHAR(255) NOT NULL,
-      firstName VARCHAR(100),
-      lastName VARCHAR(100),
-      role VARCHAR(50) DEFAULT 'staff',
-      permissionsOverride JSON,
-      accessScope JSON,
-      isVerified BOOLEAN DEFAULT FALSE,
-      status VARCHAR(20) DEFAULT 'active',
-      lastLoginAt DATETIME,
-      failedLoginAttempts INT DEFAULT 0,
-      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      INDEX (email)
-    )`);
+    // Split by semicolon to run statements individually
+    const statements = schemaSql
+      .split(/;\s*$/m)
+      .filter((stmt) => stmt.trim().length > 0);
 
-    // Audit Table Migration Logic
-    await initConn.query(`CREATE TABLE IF NOT EXISTS audit_logs (
-      id INT AUTO_INCREMENT PRIMARY KEY, 
-      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    const requiredCols = [
-      { name: "targetId", type: "VARCHAR(50)", after: "id" },
-      { name: "module", type: "VARCHAR(50)", after: "targetId" },
-      { name: "action", type: "VARCHAR(50)", after: "module" },
-      { name: "oldState", type: "LONGTEXT", after: "action" },
-      { name: "newState", type: "LONGTEXT", after: "oldState" },
-      { name: "changedBy", type: "VARCHAR(255)", after: "newState" },
-    ];
-
-    const [existingCols] = await initConn.query(`SHOW COLUMNS FROM audit_logs`);
-    const existingColNames = existingCols.map((c) => c.Field.toLowerCase());
-
-    for (const col of requiredCols) {
-      if (!existingColNames.includes(col.name.toLowerCase())) {
-        logger.info(
-          `MIGRATION: Adding missing column [${col.name}] to audit_logs...`
-        );
-        await initConn.query(
-          `ALTER TABLE audit_logs ADD COLUMN \`${col.name}\` ${col.type} AFTER \`${col.after}\``
-        );
-      }
+    for (const statement of statements) {
+      await connection.query(statement);
     }
+    logger.info("Database schema initialized.");
 
-    await initConn.end();
-    logger.info("STATUS: DATABASE READY & MIGRATED");
+    // 3. Check for Seed Data (Check if users are empty)
+    const [rows] = await connection.query(
+      "SELECT COUNT(*) as count FROM users"
+    );
+    const count = rows[0].count;
+
+    if (count === 0) {
+      logger.info("Database is empty. Seeding initial data...");
+      const seeds = await getSeedData();
+
+      // Seed Users
+      for (const user of seeds.users) {
+        await connection.query("INSERT INTO users SET ?", user);
+      }
+
+      // Seed Categories
+      for (const cat of seeds.categories) {
+        await connection.query("INSERT INTO categories SET ?", cat);
+      }
+
+      // Seed Products
+      for (const prod of seeds.products) {
+        await connection.query("INSERT INTO products SET ?", prod);
+      }
+
+      // Seed Customers
+      for (const cust of seeds.customers) {
+        await connection.query("INSERT INTO customers SET ?", cust);
+      }
+
+      // Seed Suppliers
+      for (const supp of seeds.suppliers) {
+        await connection.query("INSERT INTO suppliers SET ?", supp);
+      }
+
+      // Seed Expenses
+      for (const exp of seeds.expenses) {
+        await connection.query("INSERT INTO expenses SET ?", exp);
+      }
+
+      // Seed Income
+      for (const inc of seeds.income) {
+        await connection.query("INSERT INTO income SET ?", inc);
+      }
+
+      // Seed Orders (and Order Items)
+      for (const order of seeds.orders) {
+        const { order_items, ...orderData } = order;
+        await connection.query("INSERT INTO orders SET ?", orderData);
+
+        for (const item of order_items) {
+          item.order_id = order.id; // Ensure link
+          await connection.query("INSERT INTO order_items SET ?", item);
+        }
+      }
+
+      logger.info("✅ Database seeded successfully!");
+    } else {
+      logger.info("Database already contains data. Skipped seeding.");
+    }
   } catch (err) {
-    logger.error("INIT FAILED: " + err.message);
-    setTimeout(initializeDatabase, 10000);
+    logger.error("Initialization Failed: " + err.message);
+    // process.exit(1); // Optional: Exit if DB is critical
+  } finally {
+    if (connection) await connection.end();
   }
 }

@@ -1,33 +1,81 @@
 import express from "express";
-import * as controller from "../controllers/categoryController.js";
+import {
+  getAllCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "../controllers/categoryController.js";
+import {
+  authenticateToken,
+  authorizeRoles,
+} from "../middleware/authMiddleware.js";
+import { UserRoles } from "../enums/userRoles.js";
 
 const router = express.Router();
 
-/**
- * @swagger
- * tags:
- *   name: Categories
- *   description: Category management
- */
+router.use(authenticateToken);
 
 /**
  * @swagger
  * /categories:
  *   get:
- *     summary: Retrieve all categories
+ *     summary: Get all categories
  *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: A list of categories
+ *         description: List of categories
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Category'
+ *               $ref: '#/components/schemas/ApiResponse'
  *   post:
  *     summary: Create a new category
  *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Category'
+ *           example:
+ *             name: "New Category"
+ *     responses:
+ *       201:
+ *         description: Category created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
+router.get(
+  "/",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN, UserRoles.STAFF),
+  getAllCategories
+);
+router.post(
+  "/",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN),
+  createCategory
+);
+
+/**
+ * @swagger
+ * /categories/{id}:
+ *   put:
+ *     summary: Update a category
+ *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -35,10 +83,40 @@ const router = express.Router();
  *           schema:
  *             $ref: '#/components/schemas/Category'
  *     responses:
- *       201:
- *         description: Category created
+ *       200:
+ *         description: Category updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ *   delete:
+ *     summary: Delete a category
+ *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Category deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
  */
-router.get("/", controller.getCategories);
-router.post("/", controller.createCategory);
+router.put(
+  "/:id",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN),
+  updateCategory
+);
+router.delete(
+  "/:id",
+  authorizeRoles(UserRoles.SUPER_ADMIN, UserRoles.ADMIN),
+  deleteCategory
+);
 
 export default router;

@@ -1,7 +1,7 @@
-import logger from "../config/logger.js";
+import logger from "../utils/logger.js";
 
 const requestLogger = (req, res, next) => {
-  logger.http(`${req.method} ${req.url}`);
+  logger.info(`${req.method} ${req.url}`);
   next();
 };
 

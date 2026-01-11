@@ -1,87 +1,40 @@
-import pool from "../config/db.js";
-import { logAudit } from "../services/auditService.js";
+import { Product } from "../models/productModel.js";
+import { sendResponse, sendError } from "../utils/responseHandler.js";
 
-export const getProducts = async (req, res) => {
+export const getAllProducts = async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM products ORDER BY name ASC");
-    res.json(rows);
+    const products = await Product.findAll();
+    sendResponse(res, 200, "Products retrieved successfully", products);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendError(res, 500, error.message, error);
   }
 };
 
 export const createProduct = async (req, res) => {
-  const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();
-    const product = req.body;
-    await conn.query(
-      "INSERT INTO products (id, name, categoryId, costPrice, sellingPrice, openingStock, currentStock, image) VALUES (?,?,?,?,?,?,?,?)",
-      [
-        product.id,
-        product.name,
-        product.categoryId,
-        product.costPrice,
-        product.sellingPrice,
-        product.openingStock,
-        product.currentStock,
-        product.image,
-      ]
-    );
-    await logAudit(
-      conn,
-      product.id,
-      "Inventory",
-      "CREATE",
-      null,
-      product,
-      "Admin"
-    );
-    await conn.commit();
-    res.status(201).json({ success: true });
-  } catch (err) {
-    await conn.rollback();
-    res.status(500).json({ message: err.message });
-  } finally {
-    conn.release();
+    const result = await Product.create(req.body);
+    sendResponse(res, 201, "Product created successfully", result);
+  } catch (error) {
+    sendError(res, 500, error.message, error);
   }
 };
 
 export const updateProduct = async (req, res) => {
-  const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();
-    const [old] = await conn.query("SELECT * FROM products WHERE id = ?", [
-      req.params.id,
-    ]);
-    const p = req.body;
-    await conn.query(
-      "UPDATE products SET name=?, categoryId=?, costPrice=?, sellingPrice=?, currentStock=?, image=? WHERE id=?",
-      [
-        p.name,
-        p.categoryId,
-        p.costPrice,
-        p.sellingPrice,
-        p.currentStock,
-        p.image,
-        req.params.id,
-      ]
-    );
-    await logAudit(
-      conn,
-      req.params.id,
-      "Inventory",
-      "UPDATE",
-      old[0],
-      p,
-      "Admin"
-    );
-    await conn.commit();
-    res.json({ success: true });
-  } catch (err) {
-    await conn.rollback();
-    res.status(500).json({ message: err.message });
-  } finally {
-    conn.release();
+    const result = await Product.update(req.params.id, req.body);
+    if (!result) return sendError(res, 404, "Product not found");
+    sendResponse(res, 200, "Product updated successfully", result);
+  } catch (error) {
+    sendError(res, 500, error.message, error);
+  }
+};
+
+export const deleteProduct = async (req, res) => {
+  try {
+    const success = await Product.delete(req.params.id);
+    if (!success) return sendError(res, 404, "Product not found");
+    sendResponse(res, 200, "Product deleted successfully");
+  } catch (error) {
+    sendError(res, 500, error.message, error);
   }
 };
