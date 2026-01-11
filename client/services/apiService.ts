@@ -6,6 +6,7 @@ import {
   AuditLog,
   Expense,
   Purchase,
+  User,
 } from "../types";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
@@ -191,6 +192,43 @@ export const apiService = {
 
   async getAuditLogs(): Promise<AuditLog[]> {
     const res = await fetch(`${API_BASE}/audit-logs`);
+    return handleResponse(res);
+  },
+
+  // User Management
+  async getUsers(): Promise<User[]> {
+    const res = await fetch(`${API_BASE}/users`);
+    return handleResponse(res);
+  },
+
+  async getUser(id: string): Promise<User> {
+    const res = await fetch(`${API_BASE}/users/${id}`);
+    return handleResponse(res);
+  },
+
+  async updateUser(id: string, data: Partial<User>): Promise<void> {
+    const res = await fetch(`${API_BASE}/users/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return handleResponse(res);
+  },
+
+  async deleteUser(id: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/users/${id}`, { method: "DELETE" });
+    return handleResponse(res);
+  },
+
+  async updateUserPermissions(
+    id: string,
+    permissions: string[]
+  ): Promise<void> {
+    const res = await fetch(`${API_BASE}/users/${id}/permissions`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ permissions }),
+    });
     return handleResponse(res);
   },
 };

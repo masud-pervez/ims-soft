@@ -1,43 +1,42 @@
-
 export enum OrderStatus {
-  PENDING = 'Pending',
-  PROCESSING = 'Processing',
-  DELIVERED = 'Delivered',
-  CANCELLED = 'Cancelled',
-  RETURNED = 'Returned'
+  PENDING = "Pending",
+  PROCESSING = "Processing",
+  DELIVERED = "Delivered",
+  CANCELLED = "Cancelled",
+  RETURNED = "Returned",
 }
 
 export enum PaymentStatus {
-  UNPAID = 'Unpaid',
-  PARTIAL = 'Partial Paid',
-  PAID = 'Paid'
+  UNPAID = "Unpaid",
+  PARTIAL = "Partial Paid",
+  PAID = "Paid",
 }
 
 export enum DeliveryType {
-  INSIDE = 'Inside Area',
-  OUTSIDE = 'Outside Area',
-  URGENT = 'Urgent Delivery'
+  INSIDE = "Inside Area",
+  OUTSIDE = "Outside Area",
+  URGENT = "Urgent Delivery",
 }
 
 export enum UserRole {
-  ADMIN = 'Admin',
-  ORDER_RECEIVER = 'Order Receiver',
-  DELIVERY_MANAGER = 'Delivery Manager'
+  ADMIN = "Admin",
+  ORDER_RECEIVER = "Order Receiver",
+  DELIVERY_MANAGER = "Delivery Manager",
 }
 
 export enum ExpenseType {
-  ADS = 'FB / Google Ad Cost',
-  INFLUENCER = 'Influencer / Promotion Cost',
-  MODERATOR = 'Moderator / Call Center Cost',
-  COURIER_DELIVERY = 'Courier Delivery Cost',
-  COURIER_RETURN = 'Return Courier Cost',
-  PACKAGING = 'Packaging Cost',
-  PRODUCT_PURCHASE = 'Product Purchase Cost',
-  SALARY = 'Salary / Commission',
-  SOFTWARE = 'Software / Tool Cost',
-  UTILITY = 'Internet / Utility',
-  RENT = 'Office Rent',
-  MISC = 'Misc / Other'
+  ADS = "FB / Google Ad Cost",
+  INFLUENCER = "Influencer / Promotion Cost",
+  MODERATOR = "Moderator / Call Center Cost",
+  COURIER_DELIVERY = "Courier Delivery Cost",
+  COURIER_RETURN = "Return Courier Cost",
+  PACKAGING = "Packaging Cost",
+  PRODUCT_PURCHASE = "Product Purchase Cost",
+  SALARY = "Salary / Commission",
+  SOFTWARE = "Software / Tool Cost",
+  UTILITY = "Internet / Utility",
+  RENT = "Office Rent",
+  MISC = "Misc / Other",
 }
 
 export interface Category {
@@ -97,7 +96,7 @@ export interface Order {
   customer: {
     name: string;
     phone: string;
-    platform: 'Facebook' | 'WhatsApp';
+    platform: "Facebook" | "WhatsApp";
     profileName: string;
     address: {
       village: string;
@@ -112,7 +111,7 @@ export interface Order {
   unitPrice: number;
   subtotal: number;
   discount: {
-    type: 'fixed' | 'percentage';
+    type: "fixed" | "percentage";
     value: number;
     amount: number;
     reason: string;
@@ -152,8 +151,20 @@ export interface Order {
 export interface AuditLog {
   id: string;
   targetId: string;
-  module: 'Order' | 'Inventory' | 'Expense' | 'Category' | 'System' | 'Purchase';
-  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'STATUS_CHANGE' | 'PAYMENT' | 'STOCK_IN';
+  module:
+    | "Order"
+    | "Inventory"
+    | "Expense"
+    | "Category"
+    | "System"
+    | "Purchase";
+  action:
+    | "CREATE"
+    | "UPDATE"
+    | "DELETE"
+    | "STATUS_CHANGE"
+    | "PAYMENT"
+    | "STOCK_IN";
   oldState: string;
   newState: string;
   timestamp: string;
@@ -164,5 +175,7 @@ export interface User {
   id: string;
   name: string;
   role: UserRole;
+  email?: string;
+  permissions?: string[];
   lastLogin?: string;
 }

@@ -19,7 +19,58 @@ export const QUERY_KEYS = {
   expenses: ["expenses"],
   purchases: ["purchases"],
   auditLogs: ["auditLogs"],
+  users: ["users"],
   health: ["health"],
+};
+
+// ... existing code ...
+
+// Users
+export const useUsers = () => {
+  return useQuery({
+    queryKey: QUERY_KEYS.users,
+    queryFn: apiService.getUsers,
+  });
+};
+
+export const useUser = (id: string) => {
+  return useQuery({
+    queryKey: QUERY_KEYS.users,
+    queryFn: () => apiService.getUser(id),
+    enabled: !!id,
+  });
+};
+
+export const useUpdateUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<User> }) =>
+      apiService.updateUser(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users });
+    },
+  });
+};
+
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: apiService.deleteUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users });
+    },
+  });
+};
+
+export const useUpdateUserPermissions = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, permissions }: { id: string; permissions: string[] }) =>
+      apiService.updateUserPermissions(id, permissions),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users });
+    },
+  });
 };
 
 // Health Check
