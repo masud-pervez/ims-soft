@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run server --prefix server\" \"npm run dev --prefix client\"",
-    "install:all": "npm install && npm install --prefix client && npm install --prefix server",
-    "postinstall": "npm install --prefix client && npm install --prefix server",
-    "build": "npm run build --prefix client"
+    "dev": "concurrently \"npm run server --prefix server\" \"npm run dev --prefix frontend\"",
+    "install:all": "npm install && npm install --prefix frontend && npm install --prefix server",
+    "postinstall": "npm install --prefix frontend && npm install --prefix server",
+    "build": "npm run build --prefix frontend"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
