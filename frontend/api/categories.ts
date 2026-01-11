@@ -3,8 +3,8 @@ import { Category, CategoryPayload } from "@/types/api";
 
 export const categoryApi = {
   getAll: async (params?: object) => {
-    const response = await api.get<Category[]>("/categories", { params });
-    return response.data;
+    const response = await api.get<any>("/categories", { params });
+    return response.data.Data || [];
   },
   getOne: async (id: string) => {
     const response = await api.get<Category>(`/categories/${id}`);

@@ -23,7 +23,7 @@ export const productApi = {
     return response.data;
   },
   getCategories: async () => {
-    const response = await api.get<Category[]>("/categories");
-    return response.data;
+    const response = await api.get<any>("/categories"); // Using any temporarily as ApiResponse type wrapping is not generic in the get call here
+    return response.data.Data || [];
   },
 };

@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { productApi } from "@/api/products";
@@ -62,6 +63,9 @@ export function ProductFormModal({
 }: ProductFormModalProps) {
   const queryClient = useQueryClient();
   const isEdit = !!product;
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
+    []
+  );
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema) as any,
@@ -79,14 +83,28 @@ export function ProductFormModal({
   });
 
   useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const data = await productApi.getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    }
+    if (open) {
+      fetchCategories();
+    }
+  }, [open]);
+
+  useEffect(() => {
     if (product) {
       form.reset({
         name: product.name,
         sku: product.sku,
         categoryId: product.categoryId,
-        price: product.price,
-        costPrice: product.costPrice,
-        stock: product.stock,
+        price: product.price, // Maps to salePrice from backend response logic if consistent, but here used as form state
+        costPrice: product.costPrice, // Maps to purchasePrice
+        stock: product.stock, // Maps to stockQuantity
         minStock: product.minStock,
         description: product.description || "",
         status: product.status,
@@ -108,11 +126,19 @@ export function ProductFormModal({
 
   async function onSubmit(data: ProductFormValues) {
     try {
+      // Map form values to backend expected payload
+      const payload = {
+        ...data,
+        salePrice: data.price,
+        purchasePrice: data.costPrice,
+        stockQuantity: data.stock,
+      };
+
       if (isEdit && product) {
-        await productApi.update(product.id, data);
+        await productApi.update(product.id, payload);
         toast.success("Product updated successfully");
       } else {
-        await productApi.create(data);
+        await productApi.create(payload);
         toast.success("Product created successfully");
       }
       queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -237,10 +263,11 @@ export function ProductFormModal({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {/* TODO: Fetch categories dynamically */}
-                      <SelectItem value="cat-1">Electronics</SelectItem>
-                      <SelectItem value="cat-2">Clothing</SelectItem>
-                      <SelectItem value="cat-3">Accessories</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

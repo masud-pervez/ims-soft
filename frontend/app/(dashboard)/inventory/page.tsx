@@ -120,8 +120,9 @@ export default function InventoryPage() {
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.sku}</TableCell>
-                  <TableCell>{product.categoryId}</TableCell>{" "}
-                  {/* Mapping ID for now, later expand to Name */}
+                  <TableCell>
+                    {product.categoryName || product.categoryId}
+                  </TableCell>
                   <TableCell>${(product.price || 0).toFixed(2)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

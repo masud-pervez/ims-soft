@@ -15,6 +15,12 @@ export const createProduct = async (req, res) => {
     const result = await Product.create(req.body);
     sendResponse(res, 201, "Product created successfully", result);
   } catch (error) {
+    if (error.code === "ER_NO_REFERENCED_ROW_2") {
+      return sendError(res, 400, "Invalid category ID provided", error);
+    }
+    if (error.code === "ER_BAD_NULL_ERROR") {
+      return sendError(res, 400, "Missing required fields", error);
+    }
     sendError(res, 500, error.message, error);
   }
 };
@@ -25,6 +31,12 @@ export const updateProduct = async (req, res) => {
     if (!result) return sendError(res, 404, "Product not found");
     sendResponse(res, 200, "Product updated successfully", result);
   } catch (error) {
+    if (error.code === "ER_NO_REFERENCED_ROW_2") {
+      return sendError(res, 400, "Invalid category ID provided", error);
+    }
+    if (error.code === "ER_BAD_NULL_ERROR") {
+      return sendError(res, 400, "Missing required fields", error);
+    }
     sendError(res, 500, error.message, error);
   }
 };

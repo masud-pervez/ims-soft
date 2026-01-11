@@ -13,6 +13,7 @@ export interface Product {
   stock: number;
   minStock: number;
   categoryId: string;
+  categoryName?: string;
   category?: Category;
   description?: string;
   imageUrl?: string;
@@ -24,9 +25,15 @@ export interface Product {
 export interface ProductPayload {
   name: string;
   sku: string;
-  price: number;
-  costPrice: number;
-  stock: number;
+  price: number; // Used for UI state
+  costPrice: number; // Used for UI state
+  stock: number; // Used for UI state
+
+  // Backend expected fields
+  salePrice?: number;
+  purchasePrice?: number;
+  stockQuantity?: number;
+
   minStock: number;
   categoryId: string;
   description?: string;

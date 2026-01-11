@@ -25,7 +25,16 @@ export class Product {
 
   static async findAll() {
     const query = `
-      SELECT p.*, c.name as category_name 
+      SELECT 
+        p.id, p.name, p.sku, 
+        p.category_id as categoryId, 
+        p.purchase_price as costPrice, 
+        p.sale_price as price, 
+        p.stock_quantity as stock, 
+        p.min_stock as minStock,
+        p.description, p.status, p.image_url as imageUrl,
+        p.created_at as createdAt, p.updated_at as updatedAt,
+        c.name as categoryName 
       FROM products p 
       LEFT JOIN categories c ON p.category_id = c.id 
       ORDER BY p.created_at DESC
@@ -35,7 +44,18 @@ export class Product {
   }
 
   static async findById(id) {
-    const query = `SELECT * FROM products WHERE id = ?`;
+    const query = `
+      SELECT 
+        id, name, sku, 
+        category_id as categoryId, 
+        purchase_price as costPrice, 
+        sale_price as price, 
+        stock_quantity as stock,
+        min_stock as minStock,
+        description, status, image_url as imageUrl,
+        created_at as createdAt, updated_at as updatedAt
+      FROM products WHERE id = ?
+    `;
     const [rows] = await pool.query(query, [id]);
     return rows[0];
   }
