@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  username    String   @unique
+  email       String   @unique
+  password    String
+  name        String   @default("")
+  isActive    Boolean  @default(true)
+  role        Role     @default(STAFF)
+  permissions Json?    @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  auditLogs AuditLog[]
+}
+
+enum Role {
+  STAFF
+  SUPER_ADMIN
+  ADMIN
+}
+
+model Product {
+  id          String        @id @default(cuid())
+  name        String
+  sku         String        @unique
+  price       Float
+  costPrice   Float
+  stock       Int
+  minStock    Int
+  description String?
+  imageUrl    String?
+  status      ProductStatus @default(active)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ProductStatus {
+  active
+  inactive
+  archived
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  products    Product[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id          String    @id @default(cuid())
+  type        OrderType
+  date        DateTime  @default(now())
+  totalAmount Float
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum OrderType {
+  SALE
+  PURCHASE
+  SALE_RETURN
+  PURCHASE_RETURN
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  order     Order  @relation(fields: [orderId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  quantity Int
+  price    Float
+  total    Float
+}
+
+model Income {
+  id        String   @id @default(cuid())
+  source    String
+  amount    Float
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model Expense {
+  id        String   @id @default(cuid())
+  category  String
+  amount    Float
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  event     String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  timestamp DateTime @default(now())
+}

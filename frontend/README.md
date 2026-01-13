@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IMS Soft Frontend
 
-## Getting Started
+This is the frontend application for the IMS Soft project, built with Next.js and Prisma. I also includes the backend logic via Next.js API routes.
 
-First, run the development server:
+## Prerequisites
+
+- **Node.js**: v18 or higher
+- **MySQL**: Ensure you have a MySQL server running.
+
+## Setup Instructions
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure Environment
+
+Create a `.env` file in the root directory (if not already present) and configure your database connection:
+
+```env
+DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/ims_db"
+JWT_SECRET="your_secret_key"
+```
+
+### 3. Database Setup
+
+Run the automated setup script. This will connect to MySQL, create the database `ims_db` (if it doesn't exist), push the schema, and seed the initial data.
+
+```bash
+npm run setup
+```
+
+_Note: If the script fails to create the database due to permissions, create it manually (`CREATE DATABASE ims_db;`) and run the command again._
+
+### 4. Run the Application
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API Documentation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Swagger documentation is available at:
 
-## Learn More
+- `http://localhost:3000/api/doc` (JSON Spec)
+- or check the `/docs` route if implemented in the UI.
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/`: Next.js App Router (Pages and API routes).
+- `prisma/`: Database schema (`schema.prisma`) and seed script (`seed.ts`).
+- `lib/`: Utility libraries (e.g., `prisma.ts` client instance).
+- `components/`: React components.

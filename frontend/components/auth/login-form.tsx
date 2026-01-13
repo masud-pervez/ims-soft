@@ -42,12 +42,10 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 type LoginResponse = {
-  status: boolean;
+  status?: boolean; // API might not send this, marked optional
   message: string;
-  Data: {
-    token: string;
-    user: User;
-  };
+  token: string;
+  user: User;
 };
 
 const testCredentials = [
@@ -104,7 +102,7 @@ export function LoginForm() {
       },
       {
         onSuccess: (res) => {
-          const { token, user } = res.Data;
+          const { token, user } = res;
           setUser(user);
           setToken(token);
           setCookie("token", token);

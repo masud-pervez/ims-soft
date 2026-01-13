@@ -46,12 +46,10 @@ const signupSchema = z
 type SignupFormValues = z.infer<typeof signupSchema>;
 
 type SignupResponse = {
-  status: boolean;
+  status?: boolean;
   message: string;
-  Data: {
-    token: string;
-    user: User;
-  };
+  token: string;
+  user: User;
 };
 
 export function SignupForm() {
@@ -86,7 +84,7 @@ export function SignupForm() {
       },
       {
         onSuccess: (res) => {
-          const { token, user } = res.Data;
+          const { token, user } = res;
           setUser(user);
           setToken(token);
           setCookie("token", token);
