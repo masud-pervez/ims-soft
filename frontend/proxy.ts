@@ -4,7 +4,8 @@ import type { NextRequest } from "next/server";
 // Define paths that do not require authentication
 const publicPaths = ["/login", "/signup", "/auth/login", "/auth/register"];
 
-export function middleware(request: NextRequest) {
+// Rename from middleware to proxy as per Next.js 16 convention
+export function proxy(request: NextRequest) {
   const token = request.cookies.get("token")?.value; // Or however you store the token in cookies on the client side
 
   // NOTE: Integrating with Zustand in middleware is not directly possible because middleware runs on the Edge.
