@@ -1,4 +1,4 @@
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export const userApi = {
   GET_ALL: `${baseUrl}/users`,
